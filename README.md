@@ -1,3 +1,14 @@
+## Notes:
+1. Always use ```dataset``` for selecting elements to test like ```data-cy="test"```
+2. Set repeated codes in all tests in ```beforeEach``` function like ```cy.visit("/page")``` or login command
+3. Set baseUrl in ```cypress.config.ts``` file so dont repeat it in every visit like:
+```js
+export default defineConfig({
+  e2e: {
+    baseUrl: "base path",
+  },
+});
+```
 ## Factory:
 > Reusable function that creates test data for you.
 ```js

@@ -15,6 +15,7 @@ const user = buildUser();
 They usually located in ```cypress/support/factories/user.factory.ts```
 
 ## Commands:
+They usually located in ```cypress/support/commands.ts```
 ```js
 Cypress.Commands.add("fillInput", (selector: string, value: string) => {
   cy.get(selector).should("be.visible").clear().type(value);
@@ -75,4 +76,21 @@ Cypress.Commands.add('login', () => {
     },
   )
 })
+```
+Then use it in test like:
+```js
+beforeEach(() => {
+  cy.login()
+  cy.visit('/users')
+})
+```
+They need declaration for ts at the end of ```commands.ts``` file:
+```ts
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      login(): Chainable<void>
+    }
+  }
+}
 ```

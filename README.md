@@ -1,75 +1,107 @@
-# React + TypeScript + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
+## Notes:
+1. Always use ```dataset``` for selecting elements to test like ```data-cy="test"```
+2. Set repeated codes in all tests in ```beforeEach``` function like ```cy.visit("/page")``` or login command
+3. Set baseUrl in ```cypress.config.ts``` file so dont repeat it in every visit like:
 ```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
+export default defineConfig({
+  e2e: {
+    baseUrl: "base path",
   },
-])
-
+});
 ```
-
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
-
+## Factory:
+> Reusable function that creates test data for you.
 ```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+function buildUser() {
+  return {
+    name: 'John Doe',
+    email: 'john@test.com',
+  }
+}
+```
+Then use it in test like this:
+```js
+const user = buildUser();
+```
+They usually located in ```cypress/support/factories/user.factory.ts```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
+## Commands:
+They usually located in ```cypress/support/commands.ts```
+```js
+Cypress.Commands.add("fillInput", (selector: string, value: string) => {
+  cy.get(selector).should("be.visible").clear().type(value);
+});
+```
+### For login:
+```js
+Cypress.Commands.add('login', () => {
+  cy.session('admin', () => {
+    cy.intercept("POST", "/auth/login").as("login");
+
+    cy.intercept("GET", "/auth/authorization").as("authorization");
+
+    cy.get('input[name="username"]').type("USERNAME");
+
+    cy.get('input[name="password"]').type("PASSWORD");
+
+    cy.contains("button", "SIGN IN").click();
+
+    cy.wait("@login").its("response.statusCode").should("eq", 200);
+
+    cy.window()
+      .its("localStorage")
+      .invoke("getItem", "access-token")
+      .should("not.be.null")
+      .then((token) => {
+        cy.wait("@authorization")
+          .its("request.headers.authorization")
+          .should("eq", `Bearer ${token}`);
+      });
+  })
+})
+```
+OR
+```js
+Cypress.Commands.add('login', () => {
+  cy.session(
+    'admin',
+    () => {
+      cy.request({
+        method: 'POST',
+        url: '/api/auth/login',
+        body: {
+          email: Cypress.env('ADMIN_EMAIL'),
+          password: Cypress.env('ADMIN_PASSWORD'),
+        },
+      }).then(({ body }) => {
+        window.localStorage.setItem('accessToken', body.accessToken)
+      })
     },
-  },
-])
-
+    {
+      validate() {
+        cy.request({
+          url: '/api/auth/me',
+          failOnStatusCode: false,
+        }).its('status').should('eq', 200)
+      },
+    },
+  )
+})
+```
+Then use it in test like:
+```js
+beforeEach(() => {
+  cy.login()
+  cy.visit('/users')
+})
+```
+They need declaration for ts at the end of ```commands.ts``` file:
+```ts
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      login(): Chainable<void>
+    }
+  }
+}
 ```

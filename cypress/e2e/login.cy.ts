@@ -46,7 +46,9 @@ describe("Testing login page", () => {
   });
 
   it("Does not submit when password is empty", () => {
-    cy.get('input[name="username"]').type("sysop");
+    cy.env(["ADMIN_USERNAME"]).then(({ ADMIN_USERNAME }) => {
+      cy.fillInput('input[name="username"]', ADMIN_USERNAME);
+    });
 
     cy.contains("button", "SIGN IN").click();
 
@@ -54,7 +56,9 @@ describe("Testing login page", () => {
   });
 
   it("Does not submit when username is empty", () => {
-    cy.get('input[name="password"]').type("sysop");
+    cy.env(["ADMIN_PASSWORD"]).then(({ ADMIN_PASSWORD }) => {
+      cy.fillInput('input[name="password"]', ADMIN_PASSWORD);
+    });
 
     cy.contains("button", "SIGN IN").click();
 
@@ -108,9 +112,13 @@ describe("Testing login page", () => {
 
     cy.intercept("GET", "/auth/authorization").as("authorization");
 
-    cy.get('input[name="username"]').type("sysop");
+    cy.env(["ADMIN_USERNAME"]).then(({ ADMIN_USERNAME }) => {
+      cy.fillInput('input[name="username"]', ADMIN_USERNAME);
+    });
 
-    cy.get('input[name="password"]').type("sysop");
+    cy.env(["ADMIN_PASSWORD"]).then(({ ADMIN_PASSWORD }) => {
+      cy.fillInput('input[name="password"]', ADMIN_PASSWORD);
+    });
 
     cy.contains("button", "SIGN IN").click();
 
@@ -130,9 +138,9 @@ describe("Testing login page", () => {
   });
 
   it("Does not navigate to the local dashboard with wrong credentials", () => {
-    cy.get('input[name="username"]').type("wrong-user");
+    cy.fillInput('input[name="username"]', "wrong-data");
 
-    cy.get('input[name="password"]').type("wrong-password");
+    cy.fillInput('input[name="password"]', "wrong-data");
 
     cy.contains("button", "SIGN IN").click();
 
@@ -146,8 +154,10 @@ describe("Testing login page", () => {
 
     const scriptPayload = "<script>window.__xssExecuted = true</script>";
 
-    cy.get('input[name="username"]').type(scriptPayload);
-    cy.get('input[name="password"]').type(scriptPayload);
+    cy.fillInput('input[name="username"]', scriptPayload);
+
+    cy.fillInput('input[name="password"]', scriptPayload);
+
     cy.contains("button", "SIGN IN").click();
 
     cy.window().its("__xssExecuted").should("not.eq", true);

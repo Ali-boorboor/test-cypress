@@ -1,37 +1,39 @@
 /// <reference types="cypress" />
-// ***********************************************
-// This example commands.ts shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
-// ***********************************************
-//
-//
-// -- This is a parent command --
-// Cypress.Commands.add('login', (email, password) => { ... })
-//
-//
-// -- This is a child command --
-// Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
-//
-// declare global {
-//   namespace Cypress {
-//     interface Chainable {
-//       login(email: string, password: string): Chainable<void>
-//       drag(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-//       dismiss(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-//       visit(originalFn: CommandOriginalFn, url: string, options: Partial<VisitOptions>): Chainable<Element>
-//     }
-//   }
-// }
+
+Cypress.Commands.add("login", () => {
+  cy.env(["ADMIN_USERNAME", "ADMIN_PASSWORD"]).then(
+    ({ ADMIN_USERNAME, ADMIN_PASSWORD }) => {
+      cy.session("admin", () => {
+        cy.request({
+          method: "POST",
+          url: "/auth/login",
+          body: {
+            username: ADMIN_USERNAME,
+            password: ADMIN_PASSWORD,
+          },
+        }).then(({ body }) => {
+          expect(body.accessToken).to.not.equal(undefined);
+
+          window.localStorage.setItem("access-token", body.accessToken);
+        });
+      });
+    },
+  );
+});
+
+Cypress.Commands.add("fillInput", (selector, value) => {
+  cy.get(selector).should("be.visible").type(value);
+});
+
+/* eslint-disable @typescript-eslint/no-namespace */
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      login(): Chainable;
+      fillInput(selector: string, value: string): Chainable;
+    }
+  }
+}
+
+export { };
+

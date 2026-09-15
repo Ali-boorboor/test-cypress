@@ -2,9 +2,9 @@ const employeeTestValue = "test value";
 const employeeEditTestValue = "edit test value";
 
 const employeeInputs = [
-  { selector: "input[name='code']", employeeTestValue },
-  { selector: "input[name='lastName']", employeeTestValue },
-  { selector: "input[name='firstName']", employeeTestValue },
+  { selector: "input[name='code']", testValue: employeeTestValue },
+  { selector: "input[name='lastName']", testValue: employeeTestValue },
+  { selector: "input[name='firstName']", testValue: employeeTestValue },
 ];
 
 describe("Employee page tests", () => {
@@ -59,7 +59,7 @@ describe("Employee page tests", () => {
       cy.get('button:has(path[d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"])').click();
 
       employeeInputs.forEach((input) => {
-        cy.fillInput(input.selector, input.employeeTestValue);
+        cy.fillInput(input.selector, input.testValue);
       });
 
       cy.get("input[role='combobox']").click().type("ENG");

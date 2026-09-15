@@ -3,7 +3,7 @@ describe("Testing login page", () => {
     cy.visit("/");
   });
 
-  it.only("Renders the login page correctly", () => {
+  it("Renders the login page correctly", () => {
     cy.contains("Sign in").should("be.visible");
 
     cy.get('input[placeholder="Enter your username"]').should("be.visible");
@@ -21,23 +21,18 @@ describe("Testing login page", () => {
     cy.get('input[placeholder="Enter your password"]').should("have.value", "");
 
     cy.get("button").find('svg path[d^="M12 7c-2.76"]').should("be.visible");
-
-    cy.get('div[aria-label="login-remember-me-input"] input').invoke(
-      "prop",
-      "checked",
-    );
   });
 
   it("Shows validation errors when submitting empty form", () => {
     cy.contains("button", "SIGN IN").click();
 
-    cy.get('input[name="username"]').should(
+    cy.get('input[placeholder="Enter your username"]').should(
       "have.attr",
       "aria-invalid",
       "true",
     );
 
-    cy.get('input[name="password"]').should(
+    cy.get('input[placeholder="Enter your password"]').should(
       "have.attr",
       "aria-invalid",
       "true",
@@ -46,7 +41,7 @@ describe("Testing login page", () => {
 
   it("Does not submit when password is empty", () => {
     cy.env(["ADMIN_USERNAME"]).then(({ ADMIN_USERNAME }) => {
-      cy.fillInput('input[name="username"]', ADMIN_USERNAME);
+      cy.fillInput('input[placeholder="Enter your username"]', ADMIN_USERNAME);
     });
 
     cy.contains("button", "SIGN IN").click();
@@ -56,7 +51,7 @@ describe("Testing login page", () => {
 
   it("Does not submit when username is empty", () => {
     cy.env(["ADMIN_PASSWORD"]).then(({ ADMIN_PASSWORD }) => {
-      cy.fillInput('input[name="password"]', ADMIN_PASSWORD);
+      cy.fillInput('input[placeholder="Enter your password"]', ADMIN_PASSWORD);
     });
 
     cy.contains("button", "SIGN IN").click();
@@ -65,23 +60,35 @@ describe("Testing login page", () => {
   });
 
   it("Toggles show and hide the password", () => {
-    cy.get('input[name="password"]').type("secret123");
+    cy.get('input[placeholder="Enter your password"]').type("secret123");
 
-    cy.get('input[name="password"]').should("have.attr", "type", "password");
+    cy.get('input[placeholder="Enter your password"]').should(
+      "have.attr",
+      "type",
+      "password",
+    );
 
-    cy.get('input[name="password"]')
+    cy.get('input[placeholder="Enter your password"]')
       .parent()
       .find("svg")
       .click({ multiple: true });
 
-    cy.get('input[name="password"]').should("have.attr", "type", "text");
+    cy.get('input[placeholder="Enter your password"]').should(
+      "have.attr",
+      "type",
+      "text",
+    );
 
-    cy.get('input[name="password"]')
+    cy.get('input[placeholder="Enter your password"]')
       .parent()
       .find("svg")
       .click({ multiple: true });
 
-    cy.get('input[name="password"]').should("have.attr", "type", "password");
+    cy.get('input[placeholder="Enter your password"]').should(
+      "have.attr",
+      "type",
+      "password",
+    );
   });
 
   it("Toggles Theme", () => {
@@ -112,11 +119,11 @@ describe("Testing login page", () => {
     cy.intercept("GET", "/auth/authorization").as("authorization");
 
     cy.env(["ADMIN_USERNAME"]).then(({ ADMIN_USERNAME }) => {
-      cy.fillInput('input[name="username"]', ADMIN_USERNAME);
+      cy.fillInput('input[placeholder="Enter your username"]', ADMIN_USERNAME);
     });
 
     cy.env(["ADMIN_PASSWORD"]).then(({ ADMIN_PASSWORD }) => {
-      cy.fillInput('input[name="password"]', ADMIN_PASSWORD);
+      cy.fillInput('input[placeholder="Enter your password"]', ADMIN_PASSWORD);
     });
 
     cy.contains("button", "SIGN IN").click();
@@ -137,9 +144,9 @@ describe("Testing login page", () => {
   });
 
   it("Does not navigate to the local dashboard with wrong credentials", () => {
-    cy.fillInput('input[name="username"]', "wrong-data");
+    cy.fillInput('input[placeholder="Enter your username"]', "wrong-data");
 
-    cy.fillInput('input[name="password"]', "wrong-data");
+    cy.fillInput('input[placeholder="Enter your password"]', "wrong-data");
 
     cy.contains("button", "SIGN IN").click();
 
@@ -153,9 +160,9 @@ describe("Testing login page", () => {
 
     const scriptPayload = "<script>window.__xssExecuted = true</script>";
 
-    cy.fillInput('input[name="username"]', scriptPayload);
+    cy.fillInput('input[placeholder="Enter your username"]', scriptPayload);
 
-    cy.fillInput('input[name="password"]', scriptPayload);
+    cy.fillInput('input[placeholder="Enter your password"]', scriptPayload);
 
     cy.contains("button", "SIGN IN").click();
 

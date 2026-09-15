@@ -3,12 +3,12 @@ describe("Testing login page", () => {
     cy.visit("/");
   });
 
-  it("Renders the login page correctly", () => {
-    cy.contains("Sign In").should("be.visible");
+  it.only("Renders the login page correctly", () => {
+    cy.contains("Sign in").should("be.visible");
 
-    cy.get('input[name="username"]').should("be.visible");
+    cy.get('input[placeholder="Enter your username"]').should("be.visible");
 
-    cy.get('input[name="password"]').should("be.visible");
+    cy.get('input[placeholder="Enter your password"]').should("be.visible");
 
     cy.contains("button", "SIGN IN").should("be.visible").and("be.enabled");
 
@@ -16,17 +16,16 @@ describe("Testing login page", () => {
 
     cy.contains("Remember me").should("be.visible");
 
-    cy.get('input[name="username"]').should("have.value", "");
+    cy.get('input[placeholder="Enter your username"]').should("have.value", "");
 
-    cy.get('input[name="password"]').should("have.value", "");
+    cy.get('input[placeholder="Enter your password"]').should("have.value", "");
 
     cy.get("button").find('svg path[d^="M12 7c-2.76"]').should("be.visible");
 
-    cy.get('input[name="remember"]')
-      .invoke("prop", "checked")
-      .then((checked) => {
-        cy.log(`checked = ${checked}`);
-      });
+    cy.get('div[aria-label="login-remember-me-input"] input').invoke(
+      "prop",
+      "checked",
+    );
   });
 
   it("Shows validation errors when submitting empty form", () => {
